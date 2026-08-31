@@ -1,6 +1,7 @@
 package com.aistudio.arabicai.ui.screens
 
 import android.speech.tts.TextToSpeech
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,11 +24,13 @@ fun MainAppScreen(
     viewModel: ChatViewModel,
     tts: TextToSpeech?
 ) {
-    val drawerState = rememberDrawerState(
-        initialValue = DrawerValue.Closed
-    )
+    val drawerState =
+        rememberDrawerState(
+            initialValue = DrawerValue.Closed
+        )
 
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope =
+        rememberCoroutineScope()
 
     var currentTab by remember {
         mutableStateOf(AppTab.CHAT)
@@ -49,16 +52,22 @@ fun MainAppScreen(
         drawerState = drawerState,
 
         drawerContent = {
+
             ModalDrawerSheet(
                 drawerContainerColor = Slate900
             ) {
+
                 AppDrawer(
                     sessions = sessions,
                     activeSessionId = activeSessionId,
                     selectedPersona = selectedPersona,
 
                     onSelectSession = { sessionId ->
-                        viewModel.selectSession(sessionId)
+
+                        viewModel.selectSession(
+                            sessionId
+                        )
+
                         currentTab = AppTab.CHAT
 
                         coroutineScope.launch {
@@ -67,7 +76,11 @@ fun MainAppScreen(
                     },
 
                     onNewChat = { personaId ->
-                        viewModel.createNewSession(personaId)
+
+                        viewModel.createNewSession(
+                            personaId
+                        )
+
                         currentTab = AppTab.CHAT
 
                         coroutineScope.launch {
@@ -76,15 +89,21 @@ fun MainAppScreen(
                     },
 
                     onDeleteSession = { sessionId ->
-                        viewModel.deleteSession(sessionId)
+                        viewModel.deleteSession(
+                            sessionId
+                        )
                     },
 
                     onPinSession = { sessionId ->
-                        viewModel.pinSession(sessionId)
+                        viewModel.pinSession(
+                            sessionId
+                        )
                     },
 
                     onSelectPersona = { persona ->
-                        viewModel.selectPersona(persona)
+                        viewModel.selectPersona(
+                            persona
+                        )
                     },
 
                     onCloseDrawer = {
@@ -98,7 +117,9 @@ fun MainAppScreen(
     ) {
 
         Scaffold(
+
             topBar = {
+
                 AppTopBar(
                     selectedPersona = selectedPersona,
                     currentTab = currentTab,
@@ -121,9 +142,11 @@ fun MainAppScreen(
                         viewModel.clearCurrentChat()
                     },
 
-                    canClearChat = messages.isNotEmpty()
+                    canClearChat =
+                        messages.isNotEmpty()
                 )
             }
+
         ) { paddingValues ->
 
             Box(
@@ -135,9 +158,6 @@ fun MainAppScreen(
 
                 when (currentTab) {
 
-                    // =========================
-                    // CHAT
-                    // =========================
                     AppTab.CHAT -> {
 
                         ChatScreen(
@@ -145,10 +165,10 @@ fun MainAppScreen(
                             selectedPersona = selectedPersona,
                             isStreaming = isStreaming,
 
-                            onSendMessage = { text, imgs ->
+                            onSendMessage = { text, images ->
                                 viewModel.sendMessage(
                                     text,
-                                    imgs
+                                    images
                                 )
                             },
 
@@ -158,20 +178,17 @@ fun MainAppScreen(
 
                             onRetryMessage = {
 
-                                if (messages.size >= 2) {
-
-                                    val lastUserMsg =
-                                        messages.findLast {
-                                            it.role.name == "USER"
-                                        }
-
-                                    if (lastUserMsg != null) {
-
-                                        viewModel.sendMessage(
-                                            lastUserMsg.content,
-                                            lastUserMsg.images
-                                        )
+                                val lastUserMsg =
+                                    messages.findLast {
+                                        it.role.name == "USER"
                                     }
+
+                                if (lastUserMsg != null) {
+
+                                    viewModel.sendMessage(
+                                        lastUserMsg.content,
+                                        lastUserMsg.images
+                                    )
                                 }
                             },
 
@@ -179,27 +196,25 @@ fun MainAppScreen(
                         )
                     }
 
-                    // =========================
-                    // TOOLS
-                    // =========================
                     AppTab.TOOLS -> {
 
                         ToolsScreen(
+
                             onExecuteTool = {
                                     tool,
                                     input,
-                                    opt ->
-
+                                    option ->
                                 viewModel.executeTool(
                                     tool,
                                     input,
-                                    opt
+                                    option
                                 )
                             },
 
                             onSendToChat = { result ->
 
-                                currentTab = AppTab.CHAT
+                                currentTab =
+                                    AppTab.CHAT
 
                                 viewModel.sendMessage(
                                     result
@@ -208,15 +223,13 @@ fun MainAppScreen(
                         )
                     }
 
-                    // =========================
-                    // LIBRARY
-                    // =========================
                     AppTab.LIBRARY -> {
 
                         LibraryScreen(
                             onSelectPrompt = { prompt ->
 
-                                currentTab = AppTab.CHAT
+                                currentTab =
+                                    AppTab.CHAT
 
                                 viewModel.sendMessage(
                                     prompt
@@ -229,9 +242,6 @@ fun MainAppScreen(
         }
     }
 
-    // =========================
-    // SETTINGS DIALOG
-    // =========================
     if (showSettingsDialog) {
 
         var tempKey by remember {
@@ -251,25 +261,19 @@ fun MainAppScreen(
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = Slate900,
-
-                border = androidx.compose.foundation.BorderStroke(
+                border = BorderStroke(
                     1.dp,
                     Slate800
                 ),
-
                 modifier = Modifier.fillMaxWidth()
             ) {
 
                 Column(
                     modifier = Modifier.padding(20.dp),
-
                     verticalArrangement =
                         Arrangement.spacedBy(14.dp)
                 ) {
 
-                    // =========================
-                    // Title
-                    // =========================
                     Text(
                         text = "إعدادات الذكاء الاصطناعي",
                         fontWeight = FontWeight.Bold,
@@ -277,9 +281,6 @@ fun MainAppScreen(
                         color = Slate100
                     )
 
-                    // =========================
-                    // API KEY
-                    // =========================
                     Column {
 
                         Text(
@@ -295,72 +296,35 @@ fun MainAppScreen(
 
                         TextField(
                             value = tempKey,
-
                             onValueChange = {
                                 tempKey = it
                             },
-
                             placeholder = {
                                 Text(
-                                    text =
-                                        "أدخل مفتاح Gemini API هنا",
+                                    text = "أدخل مفتاح Gemini API هنا",
                                     fontSize = 12.sp,
                                     color = Slate400
                                 )
                             },
-
                             modifier = Modifier.fillMaxWidth(),
-
-                            // =========================
-                            // FIXED MATERIAL 3 COLORS
-                            // =========================
                             colors = TextFieldDefaults.colors(
-
-                                focusedContainerColor =
-                                    Slate950,
-
-                                unfocusedContainerColor =
-                                    Slate950,
-
-                                disabledContainerColor =
-                                    Slate950,
-
-                                focusedTextColor =
-                                    Slate100,
-
-                                unfocusedTextColor =
-                                    Slate100,
-
-                                disabledTextColor =
-                                    Slate400,
-
-                                focusedIndicatorColor =
-                                    Indigo500,
-
-                                unfocusedIndicatorColor =
-                                    Slate800,
-
-                                disabledIndicatorColor =
-                                    Slate800,
-
-                                cursorColor =
-                                    Indigo500
+                                focusedContainerColor = Slate950,
+                                unfocusedContainerColor = Slate950,
+                                disabledContainerColor = Slate950,
+                                focusedIndicatorColor = Indigo500,
+                                unfocusedIndicatorColor = Slate800,
+                                focusedTextColor = Slate100,
+                                unfocusedTextColor = Slate100,
+                                cursorColor = Indigo500
                             ),
-
-                            shape =
-                                RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp)
                         )
                     }
 
-                    // =========================
-                    // TEMPERATURE
-                    // =========================
                     Column {
 
                         Row(
-                            modifier =
-                                Modifier.fillMaxWidth(),
-
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement =
                                 Arrangement.SpaceBetween
                         ) {
@@ -368,67 +332,41 @@ fun MainAppScreen(
                             Text(
                                 text =
                                     "درجة الإبداع (Temperature):",
-
                                 fontSize = 12.sp,
-
-                                color =
-                                    Slate300
+                                color = Slate300
                             )
 
                             Text(
-                                text =
-                                    String.format(
-                                        "%.1f",
-                                        tempSlider
-                                    ),
-
+                                text = String.format(
+                                    "%.1f",
+                                    tempSlider
+                                ),
                                 fontSize = 12.sp,
-
-                                color =
-                                    Indigo400,
-
-                                fontWeight =
-                                    FontWeight.Bold
+                                color = Indigo400,
+                                fontWeight = FontWeight.Bold
                             )
                         }
 
                         Slider(
                             value = tempSlider,
-
                             onValueChange = {
                                 tempSlider = it
                             },
-
-                            valueRange =
-                                0.1f..1.0f,
-
+                            valueRange = 0.1f..1.0f,
                             steps = 9,
-
                             colors =
                                 SliderDefaults.colors(
-
-                                    thumbColor =
-                                        Indigo500,
-
-                                    activeTrackColor =
-                                        Indigo500,
-
-                                    inactiveTrackColor =
-                                        Slate800
+                                    thumbColor = Indigo500,
+                                    activeTrackColor = Indigo500,
+                                    inactiveTrackColor = Slate800
                                 )
                         )
                     }
 
-                    // =========================
-                    // BUTTONS
-                    // =========================
                     Row(
-                        modifier =
-                            Modifier.fillMaxWidth(),
-
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement =
                             Arrangement.End,
-
                         verticalAlignment =
                             Alignment.CenterVertically
                     ) {
@@ -446,8 +384,7 @@ fun MainAppScreen(
                         }
 
                         Spacer(
-                            modifier =
-                                Modifier.width(8.dp)
+                            modifier = Modifier.width(8.dp)
                         )
 
                         Button(
@@ -461,13 +398,13 @@ fun MainAppScreen(
                                     tempSlider
                                 )
 
-                                showSettingsDialog = false
+                                showSettingsDialog =
+                                    false
                             },
 
                             colors =
                                 ButtonDefaults.buttonColors(
-                                    containerColor =
-                                        Indigo600
+                                    containerColor = Indigo600
                                 ),
 
                             shape =
@@ -476,8 +413,7 @@ fun MainAppScreen(
 
                             Text(
                                 text = "حفظ التغييرات",
-                                fontWeight =
-                                    FontWeight.Bold
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
