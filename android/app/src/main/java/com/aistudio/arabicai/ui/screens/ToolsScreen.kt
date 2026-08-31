@@ -17,12 +17,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aistudio.arabicai.ui.theme.*
-import kotlinx.coroutines.launch
 
 enum class ToolType(
     val id: String,
@@ -34,26 +34,31 @@ enum class ToolType(
         "إعادة الصياغة",
         "تحسين الأسلوب والنبرة مع الحفاظ على المعنى"
     ),
+
     SUMMARIZE(
         "summarize",
         "التلخيص الذكي",
         "استخراج أهم النقاط والأفكار الرئيسية"
     ),
+
     PROOFREAD(
         "proofread",
         "التدقيق اللغوي",
         "تصحيح الأخطاء النحوية والإملائية مع التشكيل"
     ),
+
     CODE(
         "code",
         "مساعد البرمجة",
         "كتابة وفحص وشرح الأكواد البرمجية"
     ),
+
     TRANSLATE(
         "translate",
         "الترجمة الفورية",
         "ترجمة دقيقة وسياقية بين مختلف اللغات"
     ),
+
     BRAINSTORM(
         "brainstorm",
         "العصف الذهني",
@@ -97,32 +102,33 @@ fun ToolsScreen(
             .padding(16.dp)
     ) {
 
-        // =========================
-        // Tool Selector
-        // =========================
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement =
+                Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
 
             items(ToolType.values()) { tool ->
 
-                val isSelected = tool == selectedTool
+                val isSelected =
+                    tool == selectedTool
 
                 Card(
                     modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
                         .clickable {
                             selectedTool = tool
                             resultText = ""
                         },
-                    colors = CardDefaults.cardColors(
-                        containerColor =
-                            if (isSelected) {
-                                Indigo600
-                            } else {
-                                Slate900
-                            }
-                    ),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                if (isSelected) {
+                                    Indigo600
+                                } else {
+                                    Slate900
+                                }
+                        ),
                     border =
                         androidx.compose.foundation.BorderStroke(
                             1.dp,
@@ -131,8 +137,7 @@ fun ToolsScreen(
                             } else {
                                 Slate800
                             }
-                        ),
-                    shape = RoundedCornerShape(10.dp)
+                        )
                 ) {
 
                     Text(
@@ -158,9 +163,6 @@ fun ToolsScreen(
             modifier = Modifier.height(12.dp)
         )
 
-        // =========================
-        // Tool Description
-        // =========================
         Surface(
             color = Slate900,
             shape = RoundedCornerShape(12.dp),
@@ -195,18 +197,12 @@ fun ToolsScreen(
             modifier = Modifier.height(12.dp)
         )
 
-        // =========================
-        // Main Content
-        // =========================
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement =
                 Arrangement.spacedBy(12.dp)
         ) {
 
-            // =========================
-            // Input
-            // =========================
             item {
 
                 Text(
@@ -222,69 +218,33 @@ fun ToolsScreen(
 
                 TextField(
                     value = inputText,
-
                     onValueChange = {
                         inputText = it
                     },
-
                     placeholder = {
-
                         Text(
-                            text =
-                                "الصق النص أو اكتب المسألة هنا...",
+                            text = "الصق النص أو اكتب المسألة هنا...",
                             fontSize = 13.sp,
                             color = Slate400
                         )
                     },
-
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp),
-
-                    // =========================
-                    // FIXED MATERIAL 3 COLORS
-                    // =========================
                     colors = TextFieldDefaults.colors(
-
-                        focusedContainerColor =
-                            Slate900,
-
-                        unfocusedContainerColor =
-                            Slate900,
-
-                        disabledContainerColor =
-                            Slate900,
-
-                        focusedTextColor =
-                            Slate100,
-
-                        unfocusedTextColor =
-                            Slate100,
-
-                        disabledTextColor =
-                            Slate400,
-
-                        focusedIndicatorColor =
-                            Indigo500,
-
-                        unfocusedIndicatorColor =
-                            Slate800,
-
-                        disabledIndicatorColor =
-                            Slate800,
-
-                        cursorColor =
-                            Indigo500
+                        focusedContainerColor = Slate900,
+                        unfocusedContainerColor = Slate900,
+                        disabledContainerColor = Slate900,
+                        focusedIndicatorColor = Indigo500,
+                        unfocusedIndicatorColor = Slate800,
+                        focusedTextColor = Slate100,
+                        unfocusedTextColor = Slate100,
+                        cursorColor = Indigo500
                     ),
-
-                    shape =
-                        RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp)
                 )
             }
 
-            // =========================
-            // Action Button
-            // =========================
             item {
 
                 Button(
@@ -300,40 +260,29 @@ fun ToolsScreen(
                                 isLoading = true
 
                                 try {
-
                                     resultText =
                                         onExecuteTool(
                                             selectedTool,
                                             inputText,
                                             optionParam
                                         )
-
                                 } catch (e: Exception) {
-
                                     resultText =
-                                        "حدث خطأ أثناء المعالجة: ${e.message}"
-
-                                } finally {
-
-                                    isLoading = false
+                                        "حدث خطأ: ${e.message}"
                                 }
+
+                                isLoading = false
                             }
                         }
                     },
-
                     enabled =
                         inputText.isNotBlank() &&
                         !isLoading,
-
                     colors =
                         ButtonDefaults.buttonColors(
-                            containerColor =
-                                Indigo600
+                            containerColor = Indigo600
                         ),
-
-                    shape =
-                        RoundedCornerShape(12.dp),
-
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp)
@@ -342,9 +291,9 @@ fun ToolsScreen(
                     if (isLoading) {
 
                         CircularProgressIndicator(
-                            modifier =
-                                Modifier.size(20.dp),
-                            color = Slate100
+                            modifier = Modifier.size(20.dp),
+                            color = Slate100,
+                            strokeWidth = 2.dp
                         )
 
                     } else {
@@ -356,70 +305,54 @@ fun ToolsScreen(
                         )
 
                         Spacer(
-                            modifier =
-                                Modifier.width(8.dp)
+                            modifier = Modifier.width(8.dp)
                         )
 
                         Text(
-                            text =
-                                "معالجة بالذكاء الاصطناعي",
-                            fontWeight =
-                                FontWeight.Bold,
+                            text = "معالجة بالذكاء الاصطناعي",
+                            fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                     }
                 }
             }
 
-            // =========================
-            // Result
-            // =========================
             if (resultText.isNotBlank()) {
 
                 item {
 
                     Surface(
                         color = Slate900,
-                        shape =
-                            RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(12.dp),
                         border =
                             androidx.compose.foundation.BorderStroke(
                                 1.dp,
                                 Slate800
                             ),
-                        modifier =
-                            Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     ) {
 
                         Column(
-                            modifier =
-                                Modifier.padding(14.dp)
+                            modifier = Modifier.padding(14.dp)
                         ) {
 
                             Row(
-                                modifier =
-                                    Modifier.fillMaxWidth(),
-
+                                modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement =
                                     Arrangement.SpaceBetween,
-
                                 verticalAlignment =
                                     Alignment.CenterVertically
                             ) {
 
                                 Text(
-                                    text =
-                                        "النتيجة الذكية:",
-                                    fontWeight =
-                                        FontWeight.Bold,
+                                    text = "النتيجة الذكية:",
+                                    fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
-                                    color =
-                                        Indigo400
+                                    color = Indigo400
                                 )
 
                                 Row {
 
-                                    // Copy Button
                                     IconButton(
                                         onClick = {
 
@@ -444,33 +377,23 @@ fun ToolsScreen(
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         },
-
-                                        modifier =
-                                            Modifier.size(28.dp)
+                                        modifier = Modifier.size(28.dp)
                                     ) {
 
                                         Icon(
                                             imageVector =
                                                 Icons.Default.ContentCopy,
-                                            contentDescription =
-                                                "نسخ",
-                                            tint =
-                                                Slate400,
-                                            modifier =
-                                                Modifier.size(16.dp)
+                                            contentDescription = "نسخ",
+                                            tint = Slate400,
+                                            modifier = Modifier.size(16.dp)
                                         )
                                     }
 
-                                    // Send To Chat
                                     IconButton(
                                         onClick = {
-                                            onSendToChat(
-                                                resultText
-                                            )
+                                            onSendToChat(resultText)
                                         },
-
-                                        modifier =
-                                            Modifier.size(28.dp)
+                                        modifier = Modifier.size(28.dp)
                                     ) {
 
                                         Icon(
@@ -478,18 +401,15 @@ fun ToolsScreen(
                                                 Icons.Default.ChatBubbleOutline,
                                             contentDescription =
                                                 "نقل للمحادثة",
-                                            tint =
-                                                Slate400,
-                                            modifier =
-                                                Modifier.size(16.dp)
+                                            tint = Slate400,
+                                            modifier = Modifier.size(16.dp)
                                         )
                                     }
                                 }
                             }
 
                             Spacer(
-                                modifier =
-                                    Modifier.height(8.dp)
+                                modifier = Modifier.height(8.dp)
                             )
 
                             Text(
