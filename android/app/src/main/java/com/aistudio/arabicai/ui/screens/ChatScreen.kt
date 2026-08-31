@@ -7,7 +7,6 @@ import android.provider.MediaStore
 import android.speech.tts.TextToSpeech
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,14 +18,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MicOff
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -65,19 +57,15 @@ fun ChatScreen(
     val attachedImages = remember { mutableStateListOf<AttachedImage>() }
     var isListening by remember { mutableStateOf(false) }
 
-    // =========================
-    // Voice Speech Recognizer
-    // =========================
     val speechRecognizer = remember {
         VoiceSpeechRecognizer(
             context = context,
             onResult = { recognizedText ->
-                inputText =
-                    if (inputText.isNotBlank()) {
-                        "$inputText $recognizedText"
-                    } else {
-                        recognizedText
-                    }
+                inputText = if (inputText.isNotBlank()) {
+                    "$inputText $recognizedText"
+                } else {
+                    recognizedText
+                }
             },
             onError = {
                 isListening = false
@@ -94,26 +82,19 @@ fun ChatScreen(
         }
     }
 
-    // =========================
-    // Image Picker
-    // =========================
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris: List<Uri> ->
 
         uris.forEachIndexed { index, uri ->
-
             try {
                 val bitmap = if (Build.VERSION.SDK_INT < 28) {
-
                     @Suppress("DEPRECATION")
                     MediaStore.Images.Media.getBitmap(
                         context.contentResolver,
                         uri
                     )
-
                 } else {
-
                     val source = ImageDecoder.createSource(
                         context.contentResolver,
                         uri
@@ -128,48 +109,33 @@ fun ChatScreen(
                         bitmap = bitmap
                     )
                 )
-
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    // =========================
-    // Auto Scroll
-    // =========================
     LaunchedEffect(
         messages.size,
         messages.lastOrNull()?.content
     ) {
         if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(
-                messages.size - 1
-            )
+            listState.animateScrollToItem(messages.size - 1)
         }
     }
 
-    // =========================
-    // Main Layout
-    // =========================
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Slate950)
     ) {
 
-        // =========================
-        // Messages Area
-        // =========================
         Box(
             modifier = Modifier.weight(1f)
         ) {
 
             if (messages.isEmpty()) {
 
-                // =========================
-                // Welcome Screen
-                // =========================
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -183,9 +149,7 @@ fun ChatScreen(
                         Box(
                             modifier = Modifier
                                 .size(64.dp)
-                                .clip(
-                                    RoundedCornerShape(20.dp)
-                                )
+                                .clip(RoundedCornerShape(20.dp))
                                 .background(
                                     Brush.linearGradient(
                                         listOf(
@@ -196,7 +160,6 @@ fun ChatScreen(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-
                             Icon(
                                 imageVector = Icons.Default.AutoAwesome,
                                 contentDescription = null,
@@ -205,9 +168,7 @@ fun ChatScreen(
                             )
                         }
 
-                        Spacer(
-                            modifier = Modifier.height(16.dp)
-                        )
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
                             text = selectedPersona.name,
@@ -227,9 +188,7 @@ fun ChatScreen(
                             )
                         )
 
-                        Spacer(
-                            modifier = Modifier.height(20.dp)
-                        )
+                        Spacer(modifier = Modifier.height(20.dp))
 
                         Text(
                             text = "اقتراحات لبدء المحادثة:",
@@ -245,9 +204,7 @@ fun ChatScreen(
                         )
                     }
 
-                    items(
-                        selectedPersona.suggestedPrompts
-                    ) { prompt ->
+                    items(selectedPersona.suggestedPrompts) { prompt ->
 
                         Card(
                             modifier = Modifier
@@ -263,7 +220,7 @@ fun ChatScreen(
                                 containerColor = Slate900
                             ),
                             shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(
+                            border = androidx.compose.foundation.BorderStroke(
                                 1.dp,
                                 Slate800
                             )
@@ -273,10 +230,8 @@ fun ChatScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(14.dp),
-                                horizontalArrangement =
-                                    Arrangement.SpaceBetween,
-                                verticalAlignment =
-                                    Alignment.CenterVertically
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
 
                                 Text(
@@ -287,8 +242,7 @@ fun ChatScreen(
                                 )
 
                                 Icon(
-                                    imageVector =
-                                        Icons.Default.ArrowForward,
+                                    imageVector = Icons.Default.ArrowForward,
                                     contentDescription = null,
                                     tint = Indigo400,
                                     modifier = Modifier.size(16.dp)
@@ -300,18 +254,15 @@ fun ChatScreen(
 
             } else {
 
-                // =========================
-                // Messages List
-                // =========================
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize()
                 ) {
 
-                    items(messages) { message ->
+                    items(messages) { msg ->
 
                         ChatMessageItem(
-                            message = message,
+                            message = msg,
                             personaName = selectedPersona.name,
                             tts = tts,
                             onRetry = onRetryMessage
@@ -326,9 +277,6 @@ fun ChatScreen(
             }
         }
 
-        // =========================
-        // Voice Listening Banner
-        // =========================
         if (isListening) {
 
             Surface(
@@ -343,15 +291,12 @@ fun ChatScreen(
                             horizontal = 16.dp,
                             vertical = 6.dp
                         ),
-                    horizontalArrangement =
-                        Arrangement.SpaceBetween,
-                    verticalAlignment =
-                        Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
 
                     Text(
-                        text =
-                            "جاري الاستماع لصوتك باللغة العربية... تحدث الآن",
+                        text = "جاري الاستماع لصوتك باللغة العربية... تحدث الآن",
                         fontSize = 12.sp,
                         color = Slate100,
                         modifier = Modifier.weight(1f)
@@ -362,7 +307,6 @@ fun ChatScreen(
                             speechRecognizer.stopListening()
                         }
                     ) {
-
                         Text(
                             text = "إيقاف",
                             color = Rose500,
@@ -373,9 +317,6 @@ fun ChatScreen(
             }
         }
 
-        // =========================
-        // Attached Images Preview
-        // =========================
         if (attachedImages.isNotEmpty()) {
 
             LazyRow(
@@ -383,34 +324,30 @@ fun ChatScreen(
                     .fillMaxWidth()
                     .background(Slate900)
                     .padding(8.dp),
-                horizontalArrangement =
-                    Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                items(attachedImages) { image ->
+                items(attachedImages) { img ->
 
                     Box(
                         modifier = Modifier.size(60.dp)
                     ) {
 
-                        image.bitmap?.let { bitmap ->
+                        img.bitmap?.let { bitmap ->
 
                             Image(
                                 bitmap = bitmap.asImageBitmap(),
-                                contentDescription = "الصورة المرفقة",
+                                contentDescription = null,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .clip(
-                                        RoundedCornerShape(8.dp)
-                                    ),
-                                contentScale =
-                                    ContentScale.Crop
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
                             )
                         }
 
                         IconButton(
                             onClick = {
-                                attachedImages.remove(image)
+                                attachedImages.remove(img)
                             },
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
@@ -433,9 +370,6 @@ fun ChatScreen(
             }
         }
 
-        // =========================
-        // Bottom Input Area
-        // =========================
         Surface(
             color = Slate900,
             modifier = Modifier.fillMaxWidth()
@@ -448,15 +382,10 @@ fun ChatScreen(
                         horizontal = 12.dp,
                         vertical = 8.dp
                     ),
-                verticalAlignment =
-                    Alignment.Bottom,
-                horizontalArrangement =
-                    Arrangement.spacedBy(8.dp)
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                // =========================
-                // Image Button
-                // =========================
                 IconButton(
                     onClick = {
                         imagePickerLauncher.launch("image/*")
@@ -471,52 +400,40 @@ fun ChatScreen(
                     )
                 }
 
-                // =========================
-                // Voice Button
-                // =========================
                 IconButton(
                     onClick = {
-
                         if (isListening) {
                             speechRecognizer.stopListening()
                         } else {
                             speechRecognizer.startListening()
                         }
-
                     },
                     modifier = Modifier.size(40.dp)
                 ) {
 
                     Icon(
-                        imageVector =
-                            if (isListening) {
-                                Icons.Default.MicOff
-                            } else {
-                                Icons.Default.Mic
-                            },
+                        imageVector = if (isListening) {
+                            Icons.Default.MicOff
+                        } else {
+                            Icons.Default.Mic
+                        },
                         contentDescription = "إدخال صوتي",
-                        tint =
-                            if (isListening) {
-                                Rose500
-                            } else {
-                                Slate400
-                            }
+                        tint = if (isListening) {
+                            Rose500
+                        } else {
+                            Slate400
+                        }
                     )
                 }
 
-                // =========================
-                // Text Input
-                // =========================
                 TextField(
                     value = inputText,
                     onValueChange = {
                         inputText = it
                     },
                     placeholder = {
-
                         Text(
-                            text =
-                                "اكتب رسالتك أو استفسارك هنا...",
+                            text = "اكتب رسالتك أو استفسارك هنا...",
                             fontSize = 13.sp,
                             color = Slate400
                         )
@@ -528,19 +445,14 @@ fun ChatScreen(
                         disabledContainerColor = Slate950,
                         focusedIndicatorColor = Indigo500,
                         unfocusedIndicatorColor = Slate800,
-                        disabledIndicatorColor = Slate800,
                         focusedTextColor = Slate100,
                         unfocusedTextColor = Slate100,
-                        disabledTextColor = Slate400,
                         cursorColor = Indigo500
                     ),
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.weight(1f)
                 )
 
-                // =========================
-                // Send / Stop Button
-                // =========================
                 if (isStreaming) {
 
                     IconButton(
@@ -564,13 +476,11 @@ fun ChatScreen(
 
                     val canSend =
                         inputText.isNotBlank() ||
-                                attachedImages.isNotEmpty()
+                        attachedImages.isNotEmpty()
 
                     IconButton(
                         onClick = {
-
                             if (canSend) {
-
                                 onSendMessage(
                                     inputText,
                                     attachedImages.toList()
@@ -579,17 +489,12 @@ fun ChatScreen(
                                 inputText = ""
                                 attachedImages.clear()
                             }
-
                         },
                         enabled = canSend,
                         modifier = Modifier
                             .size(40.dp)
                             .background(
-                                if (canSend) {
-                                    Indigo600
-                                } else {
-                                    Slate800
-                                },
+                                if (canSend) Indigo600 else Slate800,
                                 CircleShape
                             )
                     ) {
