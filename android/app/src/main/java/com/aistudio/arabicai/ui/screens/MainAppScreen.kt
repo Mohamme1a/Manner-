@@ -23,11 +23,19 @@ fun MainAppScreen(
     viewModel: ChatViewModel,
     tts: TextToSpeech?
 ) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val drawerState = rememberDrawerState(
+        initialValue = DrawerValue.Closed
+    )
+
     val coroutineScope = rememberCoroutineScope()
 
-    var currentTab by remember { mutableStateOf(AppTab.CHAT) }
-    var showSettingsDialog by remember { mutableStateOf(false) }
+    var currentTab by remember {
+        mutableStateOf(AppTab.CHAT)
+    }
+
+    var showSettingsDialog by remember {
+        mutableStateOf(false)
+    }
 
     val sessions by viewModel.sessions.collectAsState()
     val activeSessionId by viewModel.activeSessionId.collectAsState()
@@ -39,6 +47,7 @@ fun MainAppScreen(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+
         drawerContent = {
             ModalDrawerSheet(
                 drawerContainerColor = Slate900
@@ -47,88 +56,171 @@ fun MainAppScreen(
                     sessions = sessions,
                     activeSessionId = activeSessionId,
                     selectedPersona = selectedPersona,
+
                     onSelectSession = { sessionId ->
                         viewModel.selectSession(sessionId)
                         currentTab = AppTab.CHAT
+
+                        coroutineScope.launch {
+                            drawerState.close()
+                        }
                     },
+
                     onNewChat = { personaId ->
                         viewModel.createNewSession(personaId)
                         currentTab = AppTab.CHAT
+
+                        coroutineScope.launch {
+                            drawerState.close()
+                        }
                     },
+
                     onDeleteSession = { sessionId ->
                         viewModel.deleteSession(sessionId)
                     },
+
                     onPinSession = { sessionId ->
                         viewModel.pinSession(sessionId)
                     },
+
                     onSelectPersona = { persona ->
                         viewModel.selectPersona(persona)
                     },
+
                     onCloseDrawer = {
-                        coroutineScope.launch { drawerState.close() }
+                        coroutineScope.launch {
+                            drawerState.close()
+                        }
                     }
                 )
             }
         }
     ) {
+
         Scaffold(
             topBar = {
                 AppTopBar(
                     selectedPersona = selectedPersona,
                     currentTab = currentTab,
-                    onTabSelected = { currentTab = it },
-                    onOpenDrawer = {
-                        coroutineScope.launch { drawerState.open() }
+
+                    onTabSelected = {
+                        currentTab = it
                     },
-                    onOpenSettings = { showSettingsDialog = true },
-                    onClearChat = { viewModel.clearCurrentChat() },
+
+                    onOpenDrawer = {
+                        coroutineScope.launch {
+                            drawerState.open()
+                        }
+                    },
+
+                    onOpenSettings = {
+                        showSettingsDialog = true
+                    },
+
+                    onClearChat = {
+                        viewModel.clearCurrentChat()
+                    },
+
                     canClearChat = messages.isNotEmpty()
                 )
             }
         ) { paddingValues ->
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
                     .background(Slate950)
             ) {
+
                 when (currentTab) {
+
+                    // =========================
+                    // CHAT
+                    // =========================
                     AppTab.CHAT -> {
+
                         ChatScreen(
                             messages = messages,
                             selectedPersona = selectedPersona,
                             isStreaming = isStreaming,
+
                             onSendMessage = { text, imgs ->
-                                viewModel.sendMessage(text, imgs)
+                                viewModel.sendMessage(
+                                    text,
+                                    imgs
+                                )
                             },
-                            onStopStreaming = { viewModel.stopStreaming() },
+
+                            onStopStreaming = {
+                                viewModel.stopStreaming()
+                            },
+
                             onRetryMessage = {
+
                                 if (messages.size >= 2) {
-                                    val lastUserMsg = messages.findLast { it.role.name == "USER" }
+
+                                    val lastUserMsg =
+                                        messages.findLast {
+                                            it.role.name == "USER"
+                                        }
+
                                     if (lastUserMsg != null) {
-                                        viewModel.sendMessage(lastUserMsg.content, lastUserMsg.images)
+
+                                        viewModel.sendMessage(
+                                            lastUserMsg.content,
+                                            lastUserMsg.images
+                                        )
                                     }
                                 }
                             },
+
                             tts = tts
                         )
                     }
+
+                    // =========================
+                    // TOOLS
+                    // =========================
                     AppTab.TOOLS -> {
+
                         ToolsScreen(
-                            onExecuteTool = { tool, input, opt ->
-                                viewModel.executeTool(tool, input, opt)
+                            onExecuteTool = {
+                                    tool,
+                                    input,
+                                    opt ->
+
+                                viewModel.executeTool(
+                                    tool,
+                                    input,
+                                    opt
+                                )
                             },
+
                             onSendToChat = { result ->
+
                                 currentTab = AppTab.CHAT
-                                viewModel.sendMessage(result)
+
+                                viewModel.sendMessage(
+                                    result
+                                )
                             }
                         )
                     }
+
+                    // =========================
+                    // LIBRARY
+                    // =========================
                     AppTab.LIBRARY -> {
+
                         LibraryScreen(
                             onSelectPrompt = { prompt ->
+
                                 currentTab = AppTab.CHAT
-                                viewModel.sendMessage(prompt)
+
+                                viewModel.sendMessage(
+                                    prompt
+                                )
                             }
                         )
                     }
@@ -137,22 +229,47 @@ fun MainAppScreen(
         }
     }
 
-    // Settings Dialog
+    // =========================
+    // SETTINGS DIALOG
+    // =========================
     if (showSettingsDialog) {
-        var tempKey by remember { mutableStateOf(apiKey) }
-        var tempSlider by remember { mutableStateOf(temperature) }
 
-        Dialog(onDismissRequest = { showSettingsDialog = false }) {
+        var tempKey by remember {
+            mutableStateOf(apiKey)
+        }
+
+        var tempSlider by remember {
+            mutableStateOf(temperature)
+        }
+
+        Dialog(
+            onDismissRequest = {
+                showSettingsDialog = false
+            }
+        ) {
+
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = Slate900,
-                border = androidx.compose.foundation.BorderStroke(1.dp, Slate800),
+
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    Slate800
+                ),
+
                 modifier = Modifier.fillMaxWidth()
             ) {
+
                 Column(
                     modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+
+                    verticalArrangement =
+                        Arrangement.spacedBy(14.dp)
                 ) {
+
+                    // =========================
+                    // Title
+                    // =========================
                     Text(
                         text = "إعدادات الذكاء الاصطناعي",
                         fontWeight = FontWeight.Bold,
@@ -160,71 +277,208 @@ fun MainAppScreen(
                         color = Slate100
                     )
 
-                    // API Key Field
+                    // =========================
+                    // API KEY
+                    // =========================
                     Column {
+
                         Text(
                             text = "Gemini API Key:",
                             fontSize = 12.sp,
                             color = Slate300,
                             fontWeight = FontWeight.Medium
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Spacer(
+                            modifier = Modifier.height(4.dp)
+                        )
+
                         TextField(
                             value = tempKey,
-                            onValueChange = { tempKey = it },
-                            placeholder = { Text("أدخل مفتاح Gemini API هنا", fontSize = 12.sp, color = Slate400) },
+
+                            onValueChange = {
+                                tempKey = it
+                            },
+
+                            placeholder = {
+                                Text(
+                                    text =
+                                        "أدخل مفتاح Gemini API هنا",
+                                    fontSize = 12.sp,
+                                    color = Slate400
+                                )
+                            },
+
                             modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.textFieldColors(
-                                containerColor = Slate950,
-                                focusedIndicatorColor = Indigo500,
-                                unfocusedIndicatorColor = Slate800,
-                                textColor = Slate100
+
+                            // =========================
+                            // FIXED MATERIAL 3 COLORS
+                            // =========================
+                            colors = TextFieldDefaults.colors(
+
+                                focusedContainerColor =
+                                    Slate950,
+
+                                unfocusedContainerColor =
+                                    Slate950,
+
+                                disabledContainerColor =
+                                    Slate950,
+
+                                focusedTextColor =
+                                    Slate100,
+
+                                unfocusedTextColor =
+                                    Slate100,
+
+                                disabledTextColor =
+                                    Slate400,
+
+                                focusedIndicatorColor =
+                                    Indigo500,
+
+                                unfocusedIndicatorColor =
+                                    Slate800,
+
+                                disabledIndicatorColor =
+                                    Slate800,
+
+                                cursorColor =
+                                    Indigo500
                             ),
-                            shape = RoundedCornerShape(8.dp)
+
+                            shape =
+                                RoundedCornerShape(8.dp)
                         )
                     }
 
-                    // Temperature Slider
+                    // =========================
+                    // TEMPERATURE
+                    // =========================
                     Column {
+
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            modifier =
+                                Modifier.fillMaxWidth(),
+
+                            horizontalArrangement =
+                                Arrangement.SpaceBetween
                         ) {
-                            Text(text = "درجة الإبداع (Temperature):", fontSize = 12.sp, color = Slate300)
-                            Text(text = String.format("%.1f", tempSlider), fontSize = 12.sp, color = Indigo400, fontWeight = FontWeight.Bold)
+
+                            Text(
+                                text =
+                                    "درجة الإبداع (Temperature):",
+
+                                fontSize = 12.sp,
+
+                                color =
+                                    Slate300
+                            )
+
+                            Text(
+                                text =
+                                    String.format(
+                                        "%.1f",
+                                        tempSlider
+                                    ),
+
+                                fontSize = 12.sp,
+
+                                color =
+                                    Indigo400,
+
+                                fontWeight =
+                                    FontWeight.Bold
+                            )
                         }
+
                         Slider(
                             value = tempSlider,
-                            onValueChange = { tempSlider = it },
-                            valueRange = 0.1f..1.0f,
+
+                            onValueChange = {
+                                tempSlider = it
+                            },
+
+                            valueRange =
+                                0.1f..1.0f,
+
                             steps = 9,
-                            colors = SliderDefaults.colors(
-                                thumbColor = Indigo500,
-                                activeTrackColor = Indigo500,
-                                inactiveTrackColor = Slate800
-                            )
+
+                            colors =
+                                SliderDefaults.colors(
+
+                                    thumbColor =
+                                        Indigo500,
+
+                                    activeTrackColor =
+                                        Indigo500,
+
+                                    inactiveTrackColor =
+                                        Slate800
+                                )
                         )
                     }
 
+                    // =========================
+                    // BUTTONS
+                    // =========================
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier =
+                            Modifier.fillMaxWidth(),
+
+                        horizontalArrangement =
+                            Arrangement.End,
+
+                        verticalAlignment =
+                            Alignment.CenterVertically
                     ) {
-                        TextButton(onClick = { showSettingsDialog = false }) {
-                            Text("إلغاء", color = Slate400)
+
+                        TextButton(
+                            onClick = {
+                                showSettingsDialog = false
+                            }
+                        ) {
+
+                            Text(
+                                text = "إلغاء",
+                                color = Slate400
+                            )
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Spacer(
+                            modifier =
+                                Modifier.width(8.dp)
+                        )
+
                         Button(
                             onClick = {
-                                viewModel.setApiKey(tempKey)
-                                viewModel.setTemperature(tempSlider)
+
+                                viewModel.setApiKey(
+                                    tempKey
+                                )
+
+                                viewModel.setTemperature(
+                                    tempSlider
+                                )
+
                                 showSettingsDialog = false
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Indigo600),
-                            shape = RoundedCornerShape(8.dp)
+
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Indigo600
+                                ),
+
+                            shape =
+                                RoundedCornerShape(8.dp)
                         ) {
-                            Text("حفظ التغييرات", fontWeight = FontWeight.Bold)
+
+                            Text(
+                                text = "حفظ التغييرات",
+                                fontWeight =
+                                    FontWeight.Bold
+                            )
                         }
                     }
                 }
